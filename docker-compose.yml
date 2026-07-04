@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # 1. Base de Datos
+  db:
+    image: lucianobc/db_tienda:latest
+    container_name: tienda-db
+    restart: always
+    # Los puertos a la izquierda son los de tu PC, a la derecha los del contenedor
+    ports:
+      - "3306:3306"
+    networks:
+      - red_tienda
+    volumes:
+      # Volumen persistente: Si apagas el contenedor, los datos no se borran
+      - db_data:/var/lib/mysql
+
+  # 2. Backend (Node.js)
+  backend:
+    image: lucianobc/back_tienda:latest
+    container_name: tienda-backend
+    restart: always
+    ports:
+      - "3001:3001"
+    networks:
+      - red_tienda
+    environment:
+      # Inyectamos las variables para que Node se conecte a MySQL
+      # DB_HOST usa el nombre del servicio de arriba ('db') gracias al DNS interno de Docker
+      - DB_HOST=db
+      - DB_USER=alumno
+      - DB_PASSWORD=alumno123
+      - DB_NAME=tienda_perritos
+      - PORT=3001
+    depends_on:
+      - db
+
+  # 3. Frontend (NGINX)
+  frontend:
+    image: lucianobc/front_tienda:latest
+    container_name: tienda-frontend
+    restart: always
+    ports:
+      - "8080:80" # Entrarás por localhost:8080 en tu navegador
+    networks:
+      - red_tienda
+    depends_on:
+      - backend
+
+# Definición de la red interna (Requisito de la rúbrica)
+networks:
+  red_tienda:
+    driver: bridge
+
+# Definición del volumen para persistencia de datos (Requisito de la rúbrica)
+volumes:
+  db_data:
