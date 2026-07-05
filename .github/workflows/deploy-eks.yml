@@ -69,5 +69,5 @@ jobs:
 
     - name: 7. Forzar actualización de los Pods
       run: |
-        kubectl rollout restart deployment tienda-back -n ${{ secrets.EKS_NAMESPACE }}
+        kubectl rollout restart deployment tienda-backend -n ${{ secrets.EKS_NAMESPACE }}
         kubectl rollout restart deployment tienda-frontend -n ${{ secrets.EKS_NAMESPACE }}
