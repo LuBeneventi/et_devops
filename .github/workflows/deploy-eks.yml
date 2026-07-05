@@ -32,7 +32,7 @@ jobs:
         IMAGE_TAG: latest # Usaremos latest para que siempre tome la última versión
       run: |
         echo "Construyendo y subiendo Backend..."
-        docker build -t $ECR_REGISTRY/tienda-back:$IMAGE_TAG ./back
+        docker build -t $ECR_REGISTRY/tienda-back:$IMAGE_TAG ./backend
         docker push $ECR_REGISTRY/tienda-back:$IMAGE_TAG
         
         echo "Construyendo y subiendo Frontend..."
