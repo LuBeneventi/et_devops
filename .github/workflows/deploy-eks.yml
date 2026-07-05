@@ -3,7 +3,7 @@ name: CI/CD Tienda Perritos EKS
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # Esto te permite ejecutar el pipeline a mano desde GitHub por si lo necesitas
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -19,7 +19,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # Crítico para cuentas de estudiante
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} 
         aws-region: ${{ secrets.AWS_REGION }}
 
     - name: 3. Iniciar sesión en Amazon ECR
@@ -29,11 +29,11 @@ jobs:
     - name: 4. Construir, etiquetar y subir imágenes a ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: eks-v1 # Mantengo la misma etiqueta que usaste en tu actividad anterior
+        IMAGE_TAG: latest # Usaremos latest para que siempre tome la última versión
       run: |
         echo "Construyendo y subiendo Backend..."
-        docker build -t $ECR_REGISTRY/tienda-backend:$IMAGE_TAG ./backend
-        docker push $ECR_REGISTRY/tienda-backend:$IMAGE_TAG
+        docker build -t $ECR_REGISTRY/tienda-back:$IMAGE_TAG ./back
+        docker push $ECR_REGISTRY/tienda-back:$IMAGE_TAG
         
         echo "Construyendo y subiendo Frontend..."
         docker build -t $ECR_REGISTRY/tienda-frontend:$IMAGE_TAG ./frontend
@@ -68,7 +68,6 @@ jobs:
         kubectl apply -f frontend-service.yaml
 
     - name: 7. Forzar actualización de los Pods
-      # Esto asegura que Kubernetes descargue la nueva imagen que acabamos de subir en el paso 4
       run: |
-        kubectl rollout restart deployment tienda-backend -n ${{ secrets.EKS_NAMESPACE }}
+        kubectl rollout restart deployment tienda-back -n ${{ secrets.EKS_NAMESPACE }}
         kubectl rollout restart deployment tienda-frontend -n ${{ secrets.EKS_NAMESPACE }}
